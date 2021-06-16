@@ -57,16 +57,16 @@
 	%orig(previousTraitCollection);
 
 
-    if(previousTraitCollection.userInterfaceStyle == UIUserInterfaceStyleDark)
+	if(previousTraitCollection.userInterfaceStyle == UIUserInterfaceStyleDark)
 
 
-    	self.tweakCount.textColor = [UIColor blackColor];
+		self.tweakCount.textColor = [UIColor blackColor];
 
 
-    else
+	else
 
 
-    	self.tweakCount.textColor = [UIColor whiteColor];
+		self.tweakCount.textColor = [UIColor whiteColor];
 
 
 }
