@@ -9,6 +9,14 @@
 @end
 
 
+@interface TSRootListController : UIViewController
+@property (nonatomic, copy) NSString *title;
+@end
+
+
+#define isCurrentApp(string) [[[NSBundle mainBundle] bundleIdentifier] isEqual : string]
+
+
 
 
 %hook UITableView
@@ -33,7 +41,7 @@
 
 		self.tweakCount = [[UILabel alloc] init];
 		self.tweakCount.text = [NSString stringWithFormat:@"%d",numberOfFileInFolder];
-		self.tweakCount.font = [UIFont boldSystemFontOfSize:20];
+		self.tweakCount.font = [UIFont boldSystemFontOfSize:18];
 
 		[self addSubview:self.tweakCount];
 
@@ -42,7 +50,7 @@
 
 
 		if ([[self _viewControllerForAncestor] isKindOfClass:%c(AdvancedSettingsListController)]) [self.tweakCount.topAnchor constraintEqualToAnchor : [self topAnchor] constant:220].active = YES;
-		else if ([[self _viewControllerForAncestor] isKindOfClass:%c(OrionTweakSpecifiersController)]) [self.tweakCount.topAnchor constraintEqualToAnchor : [self topAnchor] constant:6].active = YES;
+		else if ([[self _viewControllerForAncestor] isKindOfClass:%c(OrionTweakSpecifiersController)]) [self.tweakCount.topAnchor constraintEqualToAnchor : [self topAnchor] constant:8].active = YES;
 		[self.tweakCount.centerXAnchor constraintEqualToAnchor : [self centerXAnchor]].active = YES;
 
 
@@ -67,6 +75,34 @@
 
 
 		self.tweakCount.textColor = [UIColor whiteColor];
+
+
+}
+
+
+%end
+
+
+
+
+%hook TSRootListController
+
+
+- (void)viewDidLoad {
+
+
+	%orig;
+
+
+	if(!(isCurrentApp(@"com.creaturecoding.tweaksettings"))) return;
+
+
+	NSString* bundlePath = @"/Library/PreferenceLoader/Preferences";
+	NSArray *directoryContent  = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:bundlePath error:nil];
+	int numberOfFileInFolder = [directoryContent count];
+	
+
+	self.title = [NSString stringWithFormat:@"%d", numberOfFileInFolder];
 
 
 }
