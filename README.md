@@ -5,7 +5,7 @@
 
 ## Tweak count right on your settings app.
 
-## Supports both Orion and Shuffle's tweak categories.
+## Supports, Orion, Shuffle and TweakSetting's app tweak categories.
 
 
 ## Socials:
