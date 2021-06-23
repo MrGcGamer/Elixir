@@ -64,8 +64,8 @@
 			self.tableFooterView = footerView;
 
 
-		if([[self _viewControllerForAncestor] isKindOfClass:%c(TweakPreferencesListController)]) [self.tweakCount.centerXAnchor constraintEqualToAnchor : [footerView centerXAnchor]].active = YES;
-		if([[self _viewControllerForAncestor] isKindOfClass:%c(TweakPreferencesListController)]) [self.tweakCount.centerYAnchor constraintEqualToAnchor : [footerView centerYAnchor] constant:4].active = YES;
+			[self.tweakCount.centerXAnchor constraintEqualToAnchor : [footerView centerXAnchor]].active = YES;
+			[self.tweakCount.centerYAnchor constraintEqualToAnchor : [footerView centerYAnchor] constant:4].active = YES;
 
 
 		}
