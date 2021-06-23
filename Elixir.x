@@ -31,7 +31,7 @@
 	%orig;
 
 
-	if(([[self _viewControllerForAncestor] isKindOfClass:%c(OrionTweakSpecifiersController)]) || ([[self _viewControllerForAncestor] isKindOfClass:%c(AdvancedSettingsListController)])) {
+	if(([[self _viewControllerForAncestor] isKindOfClass:%c(OrionTweakSpecifiersController)]) || ([[self _viewControllerForAncestor] isKindOfClass:%c(TweakPreferencesListController)])) {
 
 
 		NSString* bundlePath = @"/Library/PreferenceLoader/Preferences";
@@ -49,10 +49,26 @@
 		self.tweakCount.translatesAutoresizingMaskIntoConstraints = NO;
 
 
-		if ([[self _viewControllerForAncestor] isKindOfClass:%c(AdvancedSettingsListController)]) [self.tweakCount.topAnchor constraintEqualToAnchor : [self topAnchor] constant:220].active = YES;
-		else if ([[self _viewControllerForAncestor] isKindOfClass:%c(OrionTweakSpecifiersController)]) [self.tweakCount.topAnchor constraintEqualToAnchor : [self topAnchor] constant:8].active = YES;
-		[self.tweakCount.centerXAnchor constraintEqualToAnchor : [self centerXAnchor]].active = YES;
+		if([[self _viewControllerForAncestor] isKindOfClass:%c(OrionTweakSpecifiersController)]) [self.tweakCount.topAnchor constraintEqualToAnchor : [self topAnchor] constant:8].active = YES;
+		if([[self _viewControllerForAncestor] isKindOfClass:%c(OrionTweakSpecifiersController)]) [self.tweakCount.centerXAnchor constraintEqualToAnchor : [self centerXAnchor]].active = YES;
 
+
+		if([[self _viewControllerForAncestor] isKindOfClass:%c(TweakPreferencesListController)]) {
+
+
+			UIView *footerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, 10)];
+
+			[footerView addSubview:self.tweakCount];
+
+
+			self.tableFooterView = footerView;
+
+
+		if([[self _viewControllerForAncestor] isKindOfClass:%c(TweakPreferencesListController)]) [self.tweakCount.centerXAnchor constraintEqualToAnchor : [footerView centerXAnchor]].active = YES;
+		if([[self _viewControllerForAncestor] isKindOfClass:%c(TweakPreferencesListController)]) [self.tweakCount.centerYAnchor constraintEqualToAnchor : [footerView centerYAnchor] constant:4].active = YES;
+
+
+		}
 
 	}
 
