@@ -14,6 +14,9 @@
 @end
 
 
+UIViewController *ancestor;
+
+
 #define isCurrentApp(string) [[[NSBundle mainBundle] bundleIdentifier] isEqual : string]
 
 
@@ -30,8 +33,10 @@
 
 	%orig;
 
+	ancestor = [self _viewControllerForAncestor];
 
-	if(([[self _viewControllerForAncestor] isKindOfClass:%c(OrionTweakSpecifiersController)]) || ([[self _viewControllerForAncestor] isKindOfClass:%c(TweakPreferencesListController)])) {
+
+	if(([ancestor isKindOfClass:%c(OrionTweakSpecifiersController)]) || ([ancestor isKindOfClass:%c(TweakPreferencesListController)])) {
 
 
 		NSString* bundlePath = @"/Library/PreferenceLoader/Preferences";
@@ -49,11 +54,11 @@
 		self.tweakCount.translatesAutoresizingMaskIntoConstraints = NO;
 
 
-		if([[self _viewControllerForAncestor] isKindOfClass:%c(OrionTweakSpecifiersController)]) [self.tweakCount.topAnchor constraintEqualToAnchor : [self topAnchor] constant:8].active = YES;
-		if([[self _viewControllerForAncestor] isKindOfClass:%c(OrionTweakSpecifiersController)]) [self.tweakCount.centerXAnchor constraintEqualToAnchor : [self centerXAnchor]].active = YES;
+		if([ancestor isKindOfClass:%c(OrionTweakSpecifiersController)]) [self.tweakCount.topAnchor constraintEqualToAnchor : [self topAnchor] constant:8].active = YES;
+		if([ancestor isKindOfClass:%c(OrionTweakSpecifiersController)]) [self.tweakCount.centerXAnchor constraintEqualToAnchor : [self centerXAnchor]].active = YES;
 
 
-		if([[self _viewControllerForAncestor] isKindOfClass:%c(TweakPreferencesListController)]) {
+		if([ancestor isKindOfClass:%c(TweakPreferencesListController)]) {
 
 
 			UIView *footerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, 10)];
