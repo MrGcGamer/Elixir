@@ -50,7 +50,10 @@ UIViewController *ancestor;
 
 		[self addSubview:self.tweakCount];
 
-
+		// Hi, if you've reached to this part, please, do yourself a favor if this is your case.
+		// Stop doing cursed and weird af UIScreen calculations and math with frames for UI layout stuff, 
+		// learn and embrace constraints instead, they are natural and beautiful. Also known as AutoLayout, AUTO (It does the thing for you!!!)
+		
 		self.tweakCount.translatesAutoresizingMaskIntoConstraints = NO;
 
 
@@ -58,7 +61,7 @@ UIViewController *ancestor;
 		if([ancestor isKindOfClass:%c(OrionTweakSpecifiersController)]) [self.tweakCount.centerXAnchor constraintEqualToAnchor : [self centerXAnchor]].active = YES;
 
 
-		if([ancestor isKindOfClass:%c(TweakPreferencesListController)]) {
+		if([ancestor isKindOfClass:%c(TweakPreferencesListController)]) { // Shuffle has a search bar so no space at the top :thishowitis:
 
 
 			UIView *footerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, 10)];
