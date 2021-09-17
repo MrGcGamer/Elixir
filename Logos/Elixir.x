@@ -179,7 +179,7 @@ UIViewController *ancestor;
 
 	if(![self isMemberOfClass:%c(PSUIPrefsListController)]) return;
 
-    PSSpecifier *emptySpecifier = [PSSpecifier emptyGroupSpecifier];
+	PSSpecifier *emptySpecifier = [PSSpecifier emptyGroupSpecifier];
 
 	NSString *elixirTweakCountLabel = [NSString stringWithFormat:@"%d Tweaks", [AMightyClass sharedInstance].elixirTweakCount];
 	PSSpecifier *elixirSpecifier = [PSSpecifier preferenceSpecifierNamed:elixirTweakCountLabel target:self set:nil get:nil detail:nil cell:PSButtonCell edit:nil];
