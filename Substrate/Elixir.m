@@ -1,20 +1,17 @@
 @import UIKit;
+#import <dlfcn.h>
 #import <substrate.h>
 #import <Preferences/PSSpecifier.h>
 #import <Preferences/PSListController.h>
 
-
-// Global
-
-UIViewController *ancestor;
-
 #define isCurrentApp(string) [[[NSBundle mainBundle] bundleIdentifier] isEqual : string]
 
-
-@interface UITableView ()
+@interface UIView ()
 - (id)_viewControllerForAncestor;
 @end
 
+@interface PSUIPrefsListController : PSListController
+@end
 
 @interface TSRootListController : UIViewController
 @property (copy, nonatomic) NSString *title;
@@ -22,17 +19,14 @@ UIViewController *ancestor;
 
 @interface AMightyClass : UIView
 @property (nonatomic, strong) UILabel *tweakCount;
-@property (copy, nonatomic) NSString *bundlePath;
-@property (nonatomic, strong) NSArray *directoryContent;
-@property (nonatomic) int elixirTweakCount;
-@property (nonatomic, strong) NSFileManager *fileM;
+@property (nonatomic, assign) NSUInteger elixirTweakCount;
 @end
 
 
 @implementation AMightyClass // fancy way to avoid code duplication, haha thanks Codine. But properties >> iVars
 
 
-+ (AMightyClass *)sharedInstance {
++ (instancetype)sharedInstance {
 
 	static AMightyClass *sharedInstance = nil;
 	static dispatch_once_t onceToken;
@@ -52,11 +46,8 @@ UIViewController *ancestor;
 
 	self = [super init];
 
-	self.fileM = [NSFileManager defaultManager];
-
-	self.bundlePath = @"/Library/PreferenceLoader/Preferences";
-	self.directoryContent = [self.fileM contentsOfDirectoryAtPath:self.bundlePath error:nil];
-	self.elixirTweakCount = [self.directoryContent count];
+	NSArray *prefsContent = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:@"/Library/PreferenceLoader/Preferences" error:nil];
+	self.elixirTweakCount = [prefsContent count];
 
 	[self setupElixirLabel];
 
@@ -68,8 +59,12 @@ UIViewController *ancestor;
 - (void)setupElixirLabel {
 
 	self.tweakCount = [UILabel new];
-	self.tweakCount.text = [NSString stringWithFormat:@"%d", self.elixirTweakCount];
+	self.tweakCount.text = [NSString stringWithFormat:@"%lu", self.elixirTweakCount];
 	self.tweakCount.font = [UIFont boldSystemFontOfSize:18];
+	if (@available(iOS 13, *))
+		self.tweakCount.textColor = [UIColor labelColor];
+	else
+		self.tweakCount.textColor = [UIColor blackColor];
 	self.tweakCount.translatesAutoresizingMaskIntoConstraints = NO;
 
 }
@@ -84,14 +79,14 @@ void newDidMoveToWindow(UITableView *self, SEL _cmd) {
 
 	origDidMoveToWindow(self, _cmd);
 
-	ancestor = [self _viewControllerForAncestor];
+	UIViewController *ancestor = [self _viewControllerForAncestor];
 
-	if([ancestor isKindOfClass:NSClassFromString(@"OrionTweakSpecifiersController")]) {
+	if([ancestor isKindOfClass:objc_getClass("OrionTweakSpecifiersController")]) {
 
 		[self addSubview:[AMightyClass sharedInstance].tweakCount];
 
 		// Hi, if you've reached to this part, please, do yourself a favor if this is your case.
-		// Stop doing cursed and weird af UIScreen calculations and math with frames for UI layout stuff, 
+		// Stop doing cursed and weird af UIScreen calculations and math with frames for UI layout stuff,
 		// learn and embrace constraints instead, they are natural and beautiful. Also known as AutoLayout, AUTO (It does the thing for you!!!)
 
 		[[AMightyClass sharedInstance].tweakCount.topAnchor constraintEqualToAnchor : self.topAnchor constant : 8].active = YES;
@@ -99,7 +94,7 @@ void newDidMoveToWindow(UITableView *self, SEL _cmd) {
 
 	}
 
-	else if([ancestor isKindOfClass:NSClassFromString(@"TweakPreferencesListController")]) { // Shuffle has a search bar so no space at the top :thishowitis:
+	else if([ancestor isKindOfClass:objc_getClass("TweakPreferencesListController")]) { // Shuffle has a search bar so no space at the top :thishowitis:
 
 		UIView *footerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, UIScreen.mainScreen.bounds.size.width, 10)];
 		[footerView addSubview:[AMightyClass sharedInstance].tweakCount];
@@ -113,78 +108,39 @@ void newDidMoveToWindow(UITableView *self, SEL _cmd) {
 
 }
 
-
-void (*origTraitCollection)(UIView *self, SEL _cmd, UITraitCollection *);
-
-void newTraitCollection(UIView *self, SEL _cmd, UITraitCollection *previousTraitCollection) {
-
-	origTraitCollection(self, _cmd, previousTraitCollection);
-
-	if(self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark)
-
-		[AMightyClass sharedInstance].tweakCount.textColor = UIColor.whiteColor;
-
-	else
-
-		[AMightyClass sharedInstance].tweakCount.textColor = UIColor.blackColor;
-
-}
-
-
 void(*origViewDidLoad)(TSRootListController *self, SEL _cmd);
 
 void overrideViewDidLoad(TSRootListController *self, SEL _cmd) {
 
 	origViewDidLoad(self, _cmd);
 
-	if(!(isCurrentApp(@"com.creaturecoding.tweaksettings"))) return;
-
-	self.title = [NSString stringWithFormat:@"%d", [AMightyClass sharedInstance].elixirTweakCount];
+	self.title = [NSString stringWithFormat:@"%lu", [AMightyClass sharedInstance].elixirTweakCount];
 
 }
 
+void (*origVDL)(PSUIPrefsListController *self, SEL _cmd);
 
-BOOL new_PSListController_areOrionOrShuffleInstalled(PSListController *self, SEL _cmd) {
-
-	return (NSClassFromString(@"OrionTweakSpecifiersController") || NSClassFromString(@"TweakPreferencesListController"));
-
-}
-
-
-void (*origVDL)(PSListController *self, SEL _cmd);
-
-void overrideVDL(PSListController *self, SEL _cmd) {
+void overrideVDL(PSUIPrefsListController *self, SEL _cmd) {
 
 	origVDL(self, _cmd);
 
-	if(new_PSListController_areOrionOrShuffleInstalled(self, _cmd)) return;
-
-	if(![self isMemberOfClass:NSClassFromString(@"PSUIPrefsListController")]) return;
-
 	PSSpecifier *emptySpecifier = [PSSpecifier emptyGroupSpecifier];
 
-	NSString *elixirTweakCountLabel = [NSString stringWithFormat:@"%d Tweaks", [AMightyClass sharedInstance].elixirTweakCount];
-	PSSpecifier *elixirSpecifier = [PSSpecifier preferenceSpecifierNamed:elixirTweakCountLabel target:self set:nil get:nil detail:nil cell:PSButtonCell edit:nil];
+	NSString *elixirTweakCountLabel = [NSString stringWithFormat:@"%lu Tweaks", [AMightyClass sharedInstance].elixirTweakCount];
+	PSSpecifier *elixirSpecifier = [PSSpecifier preferenceSpecifierNamed:elixirTweakCountLabel target:self set:nil get:nil detail:nil cell:PSStaticTextCell edit:nil];
+	[elixirSpecifier setProperty:@YES forKey:@"enabled"];
 	[self insertContiguousSpecifiers:@[emptySpecifier, elixirSpecifier] afterSpecifier:[self specifierForID:@"APPLE_ACCOUNT"]];
-
 
 }
 
 
 __attribute__((constructor)) static void init() {
 
-	MSHookMessageEx(NSClassFromString(@"UITableView"), @selector(didMoveToWindow), (IMP) &newDidMoveToWindow, (IMP*) &origDidMoveToWindow);
-	MSHookMessageEx(NSClassFromString(@"UITableView"), @selector(traitCollectionDidChange:), (IMP) &newTraitCollection, (IMP*) &origTraitCollection);
-	MSHookMessageEx(NSClassFromString(@"TSRootListController"), @selector(viewDidLoad), (IMP) &overrideViewDidLoad, (IMP*) &origViewDidLoad);
-	MSHookMessageEx(NSClassFromString(@"PSListController"), @selector(viewDidLoad), (IMP) &overrideVDL, (IMP*) &origVDL);
-
-	class_addMethod (
-		
-		NSClassFromString(@"PSListController"),
-		@selector(areOrionOrShuffleInstalled),
-		(IMP)&new_PSListController_areOrionOrShuffleInstalled,
-		"B@:"
-
-	);
+	/* --- Not sure about the dylib name of Orion, as I don't own it --- */
+	if (dlopen("/Library/MobileSubstrate/DynamicLibraries/Orion.dylib", RTLD_LAZY) != NULL || dlopen("/Library/MobileSubstrate/DynamicLibraries/shuffle.dylib", RTLD_LAZY) != NULL)
+		MSHookMessageEx(objc_getClass("UITableView"), @selector(didMoveToWindow), (IMP) &newDidMoveToWindow, (IMP*) &origDidMoveToWindow);
+	else
+		MSHookMessageEx(objc_getClass("PSUIPrefsListController"), @selector(viewDidLoad), (IMP) &overrideVDL, (IMP*) &origVDL);
+	MSHookMessageEx(objc_getClass("TSRootListController"), @selector(viewDidLoad), (IMP) &overrideViewDidLoad, (IMP*) &origViewDidLoad);
 
 }
